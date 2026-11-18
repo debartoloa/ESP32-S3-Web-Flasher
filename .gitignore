@@ -1,0 +1,25 @@
+# PlatformIO build & cache
+.pio/
+.pioenvs/
+.piolibdeps/
+
+# IDE & Editors
+.vscode/
+.idea/
+*.sublime-*
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs & Secrets
+*.log
+*.env
+.env*
+
+# Nota: docs/firmware/*.bin NON e ignorato per consentire il deploy diretto su GitHub Pages

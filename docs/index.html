@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESP32-S3 OTA Web Flasher</title>
+  <meta name="description" content="Installa il firmware base ESP32-S3 con Access Point e Web Server OTA direttamente dal browser tramite Web Serial API.">
+  <link rel="stylesheet" href="./css/style.css">
+  <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+  <script type="module" src="./js/app.js" defer></script>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <div class="badges">
+        <span class="badge badge-primary">ESP32-S3</span>
+        <span class="badge badge-neutral">v1.0.0</span>
+        <span class="badge" id="serial-badge">Verifica Web Serial...</span>
+      </div>
+      <h1>ESP32-S3 OTA Web Flasher</h1>
+      <p class="subtitle">
+        Flasha il firmware base con Access Point Wi-Fi e interfaccia OTA integrata direttamente dal browser via USB, senza installare IDE o tool locali.
+      </p>
+
+      <div class="installer-box">
+        <esp-web-install-button manifest="./manifest.json">
+          <button slot="activate" class="install-btn" type="button">
+            Installa Firmware
+          </button>
+          <div slot="unsupported" class="unsupported-msg">
+            Il tuo browser non supporta la <strong>Web Serial API</strong>. Apri questa pagina con <strong>Google Chrome</strong>, <strong>Microsoft Edge</strong> o <strong>Opera</strong> su desktop (via HTTPS o localhost).
+          </div>
+          <div slot="not-allowed" class="unsupported-msg">
+            La Web Serial API richiede un contesto sicuro (<strong>HTTPS</strong> su GitHub Pages oppure <code>localhost</code>).
+          </div>
+        </esp-web-install-button>
+        <p class="installer-hint">
+          Richiede cavo USB dati (non solo ricarica) collegato alla porta USB / UART dell'ESP32-S3.
+        </p>
+      </div>
+    </header>
+
+    <main class="grid">
+      <section class="card">
+        <h2>1. Collegamento USB e Modalità Bootloader</h2>
+        <p class="card-desc">
+          Collega la scheda ESP32-S3 al PC. Se la finestra di dialogo non rileva la porta o la connessione fallisce, forza manualmente la modalità download:
+        </p>
+        <ol class="steps">
+          <li>Collega il cavo USB alla porta <strong>USB</strong> o <strong>UART</strong> della scheda ESP32-S3.</li>
+          <li>Tieni premuto il pulsante fisico <strong>BOOT</strong> (spesso indicato anche come <code>IO0</code>).</li>
+          <li>Mentre continui a tenere premuto <strong>BOOT</strong>, premi e rilascia una volta il pulsante <strong>RESET</strong> (<code>RST</code> / <code>EN</code>).</li>
+          <li>Rilascia il pulsante <strong>BOOT</strong>: la scheda è ora in modalità Bootloader.</li>
+          <li>Clicca su <strong>Installa Firmware</strong>, seleziona la porta COM / ttyACM / USB-JTAG e conferma.</li>
+        </ol>
+        <div class="callout">
+          Al termine del flash, premi una volta <strong>RESET</strong> se la scheda non si riavvia automaticamente dal bootloader manuale.
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>2. Primo Avvio &amp; Aggiornamento OTA</h2>
+        <p class="card-desc">
+          Dopo l'installazione via USB, il firmware avvia un Access Point Wi-Fi autonomo e stampa stato e indirizzo IP sulla seriale a <code>115200 baud</code>.
+        </p>
+
+        <div class="kv-list">
+          <div class="kv-row">
+            <span class="kv-label">Rete Wi-Fi (SSID)</span>
+            <div class="kv-value-wrap">
+              <code id="ap-ssid">ESP-Setup</code>
+              <button class="copy-btn" type="button" data-copy="ESP-Setup">Copia</button>
+            </div>
+          </div>
+          <div class="kv-row">
+            <span class="kv-label">Password WPA2</span>
+            <div class="kv-value-wrap">
+              <code id="ap-pass">admin1234</code>
+              <button class="copy-btn" type="button" data-copy="admin1234">Copia</button>
+            </div>
+          </div>
+          <div class="kv-row">
+            <span class="kv-label">Portale Web OTA</span>
+            <div class="kv-value-wrap">
+              <code>http://192.168.4.1/</code>
+              <button class="copy-btn" type="button" data-copy="http://192.168.4.1/">Copia</button>
+            </div>
+          </div>
+          <div class="kv-row">
+            <span class="kv-label">Hostname mDNS</span>
+            <div class="kv-value-wrap">
+              <code>http://esp-setup.local/</code>
+              <button class="copy-btn" type="button" data-copy="http://esp-setup.local/">Copia</button>
+            </div>
+          </div>
+        </div>
+
+        <p class="card-desc small">
+          Collegati alla rete <strong>ESP-Setup</strong> da PC o smartphone e apri <code>http://192.168.4.1/</code> per caricare futuri aggiornamenti <code>.bin</code> via Wi-Fi.
+        </p>
+      </section>
+
+      <section class="card card-wide">
+        <h2>Mappa Partizioni &amp; Offset ESP32-S3</h2>
+        <p class="card-desc">
+          Configurazione esatta utilizzata da <code>manifest.json</code> (tabella Dual-OTA <code>default_8MB.csv</code>):
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Componente</th>
+                <th>Percorso File</th>
+                <th>Offset (Hex)</th>
+                <th>Offset (Decimale)</th>
+                <th>Ruolo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Bootloader</td>
+                <td><code>firmware/bootloader.bin</code></td>
+                <td><code>0x0000</code></td>
+                <td><code>0</code></td>
+                <td>Second-stage bootloader ESP32-S3</td>
+              </tr>
+              <tr>
+                <td>Partition Table</td>
+                <td><code>firmware/partitions.bin</code></td>
+                <td><code>0x8000</code></td>
+                <td><code>32768</code></td>
+                <td>Tabella Dual-OTA (ota_0 + ota_1)</td>
+              </tr>
+              <tr>
+                <td>OTA Data Init</td>
+                <td><code>firmware/boot_app0.bin</code></td>
+                <td><code>0xE000</code></td>
+                <td><code>57344</code></td>
+                <td>Selezione iniziale slot app0</td>
+              </tr>
+              <tr>
+                <td>Applicazione</td>
+                <td><code>firmware/firmware.bin</code></td>
+                <td><code>0x10000</code></td>
+                <td><code>65536</code></td>
+                <td>Firmware Arduino Wi-Fi AP + OTA</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>Powered by <a href="https://esphome.github.io/esp-web-tools/" target="_blank" rel="noopener noreferrer">ESP Web Tools</a> &amp; Web Serial API</span>
+    </footer>
+  </div>
+</body>
+</html>
