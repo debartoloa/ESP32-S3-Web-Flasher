@@ -2,6 +2,14 @@
 
 Tutte le modifiche rilevanti a questo progetto saranno documentate in questo file secondo il formato [Keep a Changelog](https://keepachangelog.com/it/1.1.0/) e il [Semantic Versioning](https://semver.org/lang/it/).
 
+## [1.1.0] - 2026-11-18
+
+### Added
+- Interfaccia Web Flasher a 3 step (stile Meshtastic Web Flasher) in `docs/index.html`, `docs/css/style.css` e `docs/js/app.js` basata su `esptool-js` via CDN.
+- Possibilità nello Step 2 di scegliere tra **Firmware Base OTA** oppure caricare un file `.bin` personalizzato dal PC.
+- Aggiunta automatica dei componenti di primo flash (`bootloader.bin` @ `0x0000`, `partitions.bin` @ `0x8000`, `boot_app0.bin` @ `0xE000`) quando si carica un `firmware.bin` personalizzato (offset `0x10000`).
+- Opzione **Full Erase** (`eraseAll`) nello Step 3, barra di avanzamento per partizione e console di log live.
+
 ## [1.0.0] - 2026-11-18
 
 ### Added

@@ -50,10 +50,18 @@ OTA-ESP32/
 
 ## Primo Flash via Browser (GitHub Pages + Web Serial)
 
-1. Effettua il push del repository su GitHub (assicurandoti che `docs/firmware/*.bin` sia incluso nel commit).
-2. Nelle impostazioni del repository GitHub: **Settings → Pages → Source: Deploy from a branch → Branch `main` / Folder `/docs`**.
+Il sito web in `docs/` utilizza **`esptool-js`** (Web Serial API) con un'interfaccia guidata a **3 step**:
+
+1. **Dispositivo:** collega l'ESP32-S3 via USB e clicca **Seleziona Dispositivo USB** (se necessario usa `BOOT` + `RESET`).
+2. **Firmware:** scegli tra:
+   - **Firmware Base OTA** (pronto all'uso: stampa saluto + IP su seriale, avvia AP `ESP-Setup` e portale OTA su `192.168.4.1`).
+   - **Carica tuo `.bin`:** seleziona un qualsiasi `firmware.bin` compilato sul tuo PC; il flasher aggiunge automaticamente `bootloader.bin` (`0x0000`), `partitions.bin` (`0x8000`) e `boot_app0.bin` (`0xE000`) per eseguire il primo flash completo da zero.
+3. **Flash:** scegli se eseguire l'erase completo della memoria (`eraseAll`) e clicca **Flash Firmware**.
+
+Per attivarlo su GitHub Pages:
+1. Effettua il push del repository su GitHub (inclusi i file in `docs/firmware/*.bin`).
+2. In **Settings → Pages → Source**, seleziona **Deploy from a branch → `main` / `/docs`**.
 3. Apri l'URL GitHub Pages con **Google Chrome**, **Microsoft Edge** o **Opera** su desktop.
-4. Collega l'ESP32-S3 via USB e clicca **Installa Firmware** (se necessario entra in modalità Bootloader tenendo premuto `BOOT`, premendo e rilasciando `RESET`, quindi rilasciando `BOOT`).
 
 ---
 
