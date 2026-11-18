@@ -2,6 +2,12 @@
 
 Tutte le modifiche rilevanti a questo progetto saranno documentate in questo file secondo il formato [Keep a Changelog](https://keepachangelog.com/it/1.1.0/) e il [Semantic Versioning](https://semver.org/lang/it/).
 
+## [1.1.2] - 2026-11-18
+
+### Fixed
+- Corretto formato dei binari passati a `esptool-js` (`Uint8Array` invece di stringa binaria) per risolvere l'errore `File 1 data must be a Uint8Array`.
+- Aggiunto avviso automatico nel log se il chip rilevato via USB non è un `ESP32-S3`.
+
 ## [1.1.1] - 2026-11-18
 
 ### Changed

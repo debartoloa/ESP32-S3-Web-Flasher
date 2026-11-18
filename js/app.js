@@ -57,23 +57,13 @@ const logger = {
   },
 };
 
-function arrayBufferToBinaryString(buffer) {
-  const bytes = new Uint8Array(buffer);
-  const chunkSize = 0x8000;
-  let result = "";
-  for (let i = 0; i < bytes.length; i += chunkSize) {
-    result += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
-  }
-  return result;
-}
-
-async function fetchBinaryString(url) {
+async function fetchBinaryUint8(url) {
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Impossibile scaricare ${url} (HTTP ${response.status})`);
   }
   const buffer = await response.arrayBuffer();
-  return arrayBufferToBinaryString(buffer);
+  return new Uint8Array(buffer);
 }
 
 function updatePartsPreview() {
@@ -163,6 +153,11 @@ async function connectDevice() {
     el.deviceStatus.textContent = `Connesso: ${chipName}`;
     el.deviceStatus.classList.add("connected");
     logger.writeLine(`[OK] Dispositivo pronto: ${chipName}`);
+    if (!String(chipName).toUpperCase().includes("ESP32-S3")) {
+      logger.writeLine(
+        `[AVVISO] Rilevato chip "${chipName}" invece di ESP32-S3. I binari inclusi (bootloader @ 0x0000 e Firmware Base) sono compilati per ESP32-S3 e non si avvieranno su un ESP32 classico.`
+      );
+    }
   } catch (err) {
     logger.writeLine(`[ERRORE] Connessione fallita: ${err.message || err}`);
     await disconnectDevice();
@@ -183,17 +178,17 @@ async function buildFileArray() {
     fileArray.push({
       label: BASE_PARTS.bootloader.label,
       address: BASE_PARTS.bootloader.address,
-      data: await fetchBinaryString(BASE_PARTS.bootloader.path),
+      data: await fetchBinaryUint8(BASE_PARTS.bootloader.path),
     });
     fileArray.push({
       label: BASE_PARTS.partitions.label,
       address: BASE_PARTS.partitions.address,
-      data: await fetchBinaryString(BASE_PARTS.partitions.path),
+      data: await fetchBinaryUint8(BASE_PARTS.partitions.path),
     });
     fileArray.push({
       label: BASE_PARTS.bootApp0.label,
       address: BASE_PARTS.bootApp0.address,
-      data: await fetchBinaryString(BASE_PARTS.bootApp0.path),
+      data: await fetchBinaryUint8(BASE_PARTS.bootApp0.path),
     });
   }
 
@@ -202,7 +197,7 @@ async function buildFileArray() {
     fileArray.push({
       label: BASE_PARTS.baseFirmware.label,
       address: BASE_PARTS.baseFirmware.address,
-      data: await fetchBinaryString(BASE_PARTS.baseFirmware.path),
+      data: await fetchBinaryUint8(BASE_PARTS.baseFirmware.path),
     });
   } else {
     if (!state.customFile) {
@@ -214,7 +209,7 @@ async function buildFileArray() {
     fileArray.push({
       label: state.customFile.name,
       address: targetAddr,
-      data: arrayBufferToBinaryString(buffer),
+      data: new Uint8Array(buffer),
     });
   }
 
