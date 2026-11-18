@@ -17,13 +17,13 @@
         </svg>
       </div>
       <div class="badges">
-        <span class="badge badge-primary">ESP32-S3</span>
-        <span class="badge badge-neutral">v1.1.0</span>
+        <span class="badge badge-primary">ESP32 / S3 / C3 / S2</span>
+        <span class="badge badge-neutral">v1.2.0</span>
         <span class="badge" id="serial-badge">Verifica Web Serial...</span>
       </div>
-      <h1>ESP32-S3 OTA Web Flasher</h1>
+      <h1>ESP32 OTA Web Flasher</h1>
       <p class="subtitle">
-        Uno strumento web-based per il flashing del firmware ESP32-S3 direttamente dal browser via USB.
+        Uno strumento web-based per il flashing del firmware su tutta la famiglia ESP32 direttamente dal browser via USB.
       </p>
     </header>
 
@@ -59,10 +59,20 @@
           Nessun dispositivo connesso
         </div>
 
+        <label class="select-wrap" for="family-select">
+          <span>Famiglia ESP32 (auto-rilevata alla connessione)</span>
+          <select id="family-select">
+            <option value="esp32s3">ESP32-S3 (bootloader 0x0000)</option>
+            <option value="esp32">ESP32 Classico (bootloader 0x1000)</option>
+            <option value="esp32c3">ESP32-C3 (bootloader 0x0000)</option>
+            <option value="esp32s2">ESP32-S2 (bootloader 0x1000)</option>
+          </select>
+        </label>
+
         <div class="step-footer">
           <h2>1. DISPOSITIVO</h2>
           <p>
-            Collega l'ESP32-S3 tramite cavo USB dati. Se non risponde, tieni premuto <strong>BOOT</strong>, premi e rilascia <strong>RESET</strong>, poi rilascia <strong>BOOT</strong>.
+            Collega il tuo ESP32 tramite cavo USB dati. Se non risponde, tieni premuto <strong>BOOT</strong>, premi e rilascia <strong>RESET</strong>, poi rilascia <strong>BOOT</strong>.
           </p>
         </div>
       </section>
@@ -160,13 +170,13 @@
 
       <div class="panel-box">
         <div class="panel-header">
-          <h3>Componenti Flashati (ESP32-S3)</h3>
+          <h3>Componenti Flashati (<span id="target-family-label">ESP32-S3</span>)</h3>
         </div>
         <ul class="offset-list" id="parts-preview">
           <li><span><code>0x0000</code></span><span>bootloader.bin (auto)</span></li>
           <li><span><code>0x8000</code></span><span>partitions.bin (auto, Dual-OTA)</span></li>
           <li><span><code>0xE000</code></span><span>boot_app0.bin (auto)</span></li>
-          <li><span><code>0x10000</code></span><span id="app-part-name">firmware/firmware.bin (Base OTA)</span></li>
+          <li><span><code>0x10000</code></span><span id="app-part-name">firmware/esp32s3/firmware.bin (Base OTA)</span></li>
         </ul>
       </div>
     </section>

@@ -21,10 +21,10 @@ OTA-ESP32/
 ├── css/style.css               # Stile Dark Mode responsive
 ├── js/app.js                   # Logica Web Serial API (esptool-js) e caricamento .bin
 ├── firmware/                   # Generata automaticamente da copy_firmware.py
-│   ├── bootloader.bin          # Offset 0x0000  (0)
-│   ├── partitions.bin          # Offset 0x8000  (32768)
-│   ├── boot_app0.bin           # Offset 0xE000  (57344)
-│   └── firmware.bin            # Offset 0x10000 (65536)
+│   ├── esp32/                  # ESP32 classico (bootloader @ 0x1000)
+│   ├── esp32s3/                # ESP32-S3 (bootloader @ 0x0000)
+│   ├── esp32c3/                # ESP32-C3 (bootloader @ 0x0000)
+│   └── esp32s2/                # ESP32-S2 (bootloader @ 0x1000)
 ├── README.md
 ├── CHANGELOG.md
 └── .gitignore

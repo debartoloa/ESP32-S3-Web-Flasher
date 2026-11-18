@@ -251,6 +251,29 @@ h1 {
   background: rgba(16, 185, 129, 0.08);
 }
 
+.select-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.select-wrap select {
+  width: 100%;
+  background: var(--surface-alt);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  outline: none;
+}
+
+.select-wrap select:focus {
+  border-color: var(--accent);
+}
+
 .fw-mode-tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;

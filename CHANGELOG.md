@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti a questo progetto saranno documentate in questo file secondo il formato [Keep a Changelog](https://keepachangelog.com/it/1.1.0/) e il [Semantic Versioning](https://semver.org/lang/it/).
 
+## [1.2.0] - 2026-11-18
+
+### Added
+- Supporto multi-target per 4 famiglie ESP32 in `platformio.ini` (`esp32`, `esp32s3`, `esp32c3`, `esp32s2`) con tabella Dual-OTA dedicata.
+- Esportazione automatica per target in `firmware/<famiglia>/` tramite `copy_firmware.py` con offset bootloader specifici (`0x1000` per `esp32`/`esp32s2`, `0x0000` per `esp32s3`/`esp32c3`).
+- Rilevamento automatico del chip collegato via USB in `js/app.js` con selezione automatica della famiglia e degli offset di flash.
+
 ## [1.1.2] - 2026-11-18
 
 ### Fixed

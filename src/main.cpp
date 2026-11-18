@@ -152,7 +152,7 @@ static const char INDEX_HTML[] PROGMEM = R"rawliteral(<!DOCTYPE html>
 </head>
 <body>
   <main class="card">
-    <span class="badge">ESP32-S3 &bull; OTA Ready</span>
+    <span class="badge" id="chip-badge">ESP32 &bull; OTA Ready</span>
     <h1>Aggiornamento Firmware</h1>
     <p class="sub">Seleziona il file <code>firmware.bin</code> compilato e caricalo via Wi-Fi sulla scheda.</p>
 
@@ -191,6 +191,9 @@ static const char INDEX_HTML[] PROGMEM = R"rawliteral(<!DOCTYPE html>
         .then((d) => {
           document.getElementById("fw-ver").textContent = "v" + d.version;
           document.getElementById("ap-ip").textContent = d.ip;
+          if (d.chip) {
+            document.getElementById("chip-badge").textContent = d.chip + " \u2022 OTA Ready";
+          }
         })
         .catch(() => {});
 
@@ -335,7 +338,7 @@ void setup() {
 
   Serial.println();
   Serial.println("==========================================");
-  Serial.println("  ESP32-S3 OTA Web Flasher - Ready      ");
+  Serial.println("  ESP32 OTA Web Flasher - Ready         ");
   Serial.printf("  Versione: v%s | Chip: %s\n", FW_VERSION, ESP.getChipModel());
   Serial.println("==========================================");
 

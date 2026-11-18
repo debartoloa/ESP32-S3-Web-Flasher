@@ -1,10 +1,30 @@
 import { Transport, ESPLoader } from "https://unpkg.com/esptool-js/bundle.js";
 
-const BASE_PARTS = {
-  bootloader: { path: "./firmware/bootloader.bin", address: 0x0000, label: "bootloader.bin" },
-  partitions: { path: "./firmware/partitions.bin", address: 0x8000, label: "partitions.bin" },
-  bootApp0: { path: "./firmware/boot_app0.bin", address: 0xE000, label: "boot_app0.bin" },
-  baseFirmware: { path: "./firmware/firmware.bin", address: 0x10000, label: "firmware.bin (Base OTA)" },
+const FAMILIES = {
+  esp32: {
+    label: "ESP32 Classico",
+    bootloaderAddress: 0x1000,
+    bootloaderHex: "0x1000",
+    dir: "./firmware/esp32",
+  },
+  esp32s3: {
+    label: "ESP32-S3",
+    bootloaderAddress: 0x0000,
+    bootloaderHex: "0x0000",
+    dir: "./firmware/esp32s3",
+  },
+  esp32c3: {
+    label: "ESP32-C3",
+    bootloaderAddress: 0x0000,
+    bootloaderHex: "0x0000",
+    dir: "./firmware/esp32c3",
+  },
+  esp32s2: {
+    label: "ESP32-S2",
+    bootloaderAddress: 0x1000,
+    bootloaderHex: "0x1000",
+    dir: "./firmware/esp32s2",
+  },
 };
 
 const state = {
@@ -12,6 +32,7 @@ const state = {
   transport: null,
   esploader: null,
   chipName: null,
+  family: "esp32s3",
   fwMode: "base", // "base" | "custom"
   customFile: null,
   isFlashing: false,
@@ -26,6 +47,8 @@ const el = {
   btnConnect: document.getElementById("btn-connect"),
   btnDisconnect: document.getElementById("btn-disconnect"),
   deviceStatus: document.getElementById("device-status"),
+  familySelect: document.getElementById("family-select"),
+  targetFamilyLabel: document.getElementById("target-family-label"),
   tabBase: document.getElementById("tab-base"),
   tabCustom: document.getElementById("tab-custom"),
   panelBase: document.getElementById("panel-base"),
@@ -57,6 +80,15 @@ const logger = {
   },
 };
 
+function detectFamilyFromChip(chipName) {
+  const upper = String(chipName || "").toUpperCase();
+  if (upper.includes("ESP32-S3")) return "esp32s3";
+  if (upper.includes("ESP32-C3")) return "esp32c3";
+  if (upper.includes("ESP32-S2")) return "esp32s2";
+  if (upper.includes("ESP32")) return "esp32";
+  return null;
+}
+
 async function fetchBinaryUint8(url) {
   const response = await fetch(url);
   if (!response.ok) {
@@ -67,19 +99,21 @@ async function fetchBinaryUint8(url) {
 }
 
 function updatePartsPreview() {
-  const rows = [];
+  const fam = FAMILIES[state.family];
+  el.targetFamilyLabel.textContent = fam.label;
 
+  const rows = [];
   if (state.fwMode === "base") {
-    rows.push(["0x0000", "bootloader.bin (auto)"]);
-    rows.push(["0x8000", "partitions.bin (auto, Dual-OTA)"]);
-    rows.push(["0xE000", "boot_app0.bin (auto)"]);
-    rows.push(["0x10000", "firmware/firmware.bin (Base OTA)"]);
+    rows.push([fam.bootloaderHex, `${state.family}/bootloader.bin (auto)`]);
+    rows.push(["0x8000", `${state.family}/partitions.bin (auto, Dual-OTA)`]);
+    rows.push(["0xE000", `${state.family}/boot_app0.bin (auto)`]);
+    rows.push(["0x10000", `${state.family}/firmware.bin (Base OTA)`]);
   } else {
     const fileName = state.customFile ? state.customFile.name : "Seleziona file .bin...";
     if (el.chkIncludeBaseParts.checked) {
-      rows.push(["0x0000", "bootloader.bin (auto)"]);
-      rows.push(["0x8000", "partitions.bin (auto, Dual-OTA)"]);
-      rows.push(["0xE000", "boot_app0.bin (auto)"]);
+      rows.push([fam.bootloaderHex, `${state.family}/bootloader.bin (auto)`]);
+      rows.push(["0x8000", `${state.family}/partitions.bin (auto, Dual-OTA)`]);
+      rows.push(["0xE000", `${state.family}/boot_app0.bin (auto)`]);
       rows.push(["0x10000", `${fileName} (tuo firmware)`]);
     } else {
       rows.push(["0x0000", `${fileName} (immagine completa)`]);
@@ -150,14 +184,18 @@ async function connectDevice() {
     state.esploader = esploader;
     state.chipName = chipName;
 
+    const detected = detectFamilyFromChip(chipName);
+    if (detected && FAMILIES[detected]) {
+      state.family = detected;
+      el.familySelect.value = detected;
+      logger.writeLine(`[OK] Dispositivo pronto: ${chipName} -> target selezionato: ${FAMILIES[detected].label}`);
+    } else {
+      logger.writeLine(`[OK] Dispositivo pronto: ${chipName}`);
+      logger.writeLine(`[AVVISO] Chip "${chipName}" non riconosciuto automaticamente: verifica la famiglia selezionata nello Step 1.`);
+    }
+
     el.deviceStatus.textContent = `Connesso: ${chipName}`;
     el.deviceStatus.classList.add("connected");
-    logger.writeLine(`[OK] Dispositivo pronto: ${chipName}`);
-    if (!String(chipName).toUpperCase().includes("ESP32-S3")) {
-      logger.writeLine(
-        `[AVVISO] Rilevato chip "${chipName}" invece di ESP32-S3. I binari inclusi (bootloader @ 0x0000 e Firmware Base) sono compilati per ESP32-S3 e non si avvieranno su un ESP32 classico.`
-      );
-    }
   } catch (err) {
     logger.writeLine(`[ERRORE] Connessione fallita: ${err.message || err}`);
     await disconnectDevice();
@@ -168,36 +206,38 @@ async function connectDevice() {
 }
 
 async function buildFileArray() {
+  const fam = FAMILIES[state.family];
   const fileArray = [];
-
   const includeSystemParts =
     state.fwMode === "base" || el.chkIncludeBaseParts.checked;
 
   if (includeSystemParts) {
-    logger.writeLine("Caricamento componenti di sistema ESP32-S3 (bootloader, partitions, boot_app0)...");
+    logger.writeLine(
+      `Caricamento componenti di sistema [${fam.label}] (bootloader @ ${fam.bootloaderHex}, partitions, boot_app0)...`
+    );
     fileArray.push({
-      label: BASE_PARTS.bootloader.label,
-      address: BASE_PARTS.bootloader.address,
-      data: await fetchBinaryUint8(BASE_PARTS.bootloader.path),
+      label: `${state.family}/bootloader.bin`,
+      address: fam.bootloaderAddress,
+      data: await fetchBinaryUint8(`${fam.dir}/bootloader.bin`),
     });
     fileArray.push({
-      label: BASE_PARTS.partitions.label,
-      address: BASE_PARTS.partitions.address,
-      data: await fetchBinaryUint8(BASE_PARTS.partitions.path),
+      label: `${state.family}/partitions.bin`,
+      address: 0x8000,
+      data: await fetchBinaryUint8(`${fam.dir}/partitions.bin`),
     });
     fileArray.push({
-      label: BASE_PARTS.bootApp0.label,
-      address: BASE_PARTS.bootApp0.address,
-      data: await fetchBinaryUint8(BASE_PARTS.bootApp0.path),
+      label: `${state.family}/boot_app0.bin`,
+      address: 0xE000,
+      data: await fetchBinaryUint8(`${fam.dir}/boot_app0.bin`),
     });
   }
 
   if (state.fwMode === "base") {
-    logger.writeLine("Caricamento Firmware Base OTA (v1.0.0)...");
+    logger.writeLine(`Caricamento Firmware Base OTA [${fam.label}]...`);
     fileArray.push({
-      label: BASE_PARTS.baseFirmware.label,
-      address: BASE_PARTS.baseFirmware.address,
-      data: await fetchBinaryUint8(BASE_PARTS.baseFirmware.path),
+      label: `${state.family}/firmware.bin`,
+      address: 0x10000,
+      data: await fetchBinaryUint8(`${fam.dir}/firmware.bin`),
     });
   } else {
     if (!state.customFile) {
@@ -250,7 +290,6 @@ async function startFlash() {
     el.progressText.textContent = "Flash completato! Riavvio della scheda...";
     logger.writeLine("[OK] Flash completato con successo!");
 
-    // Hard reset tramite linee RTS/DTR
     await state.transport.setDTR(false);
     await state.transport.setRTS(true);
     await new Promise((r) => setTimeout(r, 100));
@@ -293,6 +332,11 @@ document.addEventListener("DOMContentLoaded", () => {
   el.btnDisconnect.addEventListener("click", disconnectDevice);
   el.btnFlash.addEventListener("click", startFlash);
   el.btnClearLog.addEventListener("click", () => logger.clean());
+
+  el.familySelect.addEventListener("change", (event) => {
+    state.family = event.target.value;
+    updateUIState();
+  });
 
   el.tabBase.addEventListener("click", () => setFirmwareMode("base"));
   el.tabCustom.addEventListener("click", () => setFirmwareMode("custom"));
