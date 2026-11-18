@@ -1,4 +1,4 @@
-"""Post-build script for PlatformIO (and standalone CLI) to copy ESP32-S3 binaries into docs/firmware/."""
+"""Post-build script for PlatformIO (and standalone CLI) to copy ESP32-S3 binaries into firmware/."""
 
 import os
 import shutil
@@ -15,8 +15,8 @@ BIN_SPECS = [
 
 
 def copy_binaries(project_dir: Path, build_dir: Path, progname: str, framework_dir: Path) -> bool:
-    """Copy bootloader, partitions, boot_app0 and firmware binaries into docs/firmware/."""
-    dest_dir = project_dir / "docs" / "firmware"
+    """Copy bootloader, partitions, boot_app0 and firmware binaries into firmware/."""
+    dest_dir = project_dir / "firmware"
     dest_dir.mkdir(parents=True, exist_ok=True)
 
     sources = {

@@ -22,4 +22,4 @@ desktop.ini
 *.env
 .env*
 
-# Nota: docs/firmware/*.bin NON e ignorato per consentire il deploy diretto su GitHub Pages
+# Nota: firmware/*.bin NON e ignorato per consentire il deploy diretto su GitHub Pages

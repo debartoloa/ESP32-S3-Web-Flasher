@@ -2,6 +2,12 @@
 
 Tutte le modifiche rilevanti a questo progetto saranno documentate in questo file secondo il formato [Keep a Changelog](https://keepachangelog.com/it/1.1.0/) e il [Semantic Versioning](https://semver.org/lang/it/).
 
+## [1.1.1] - 2026-11-18
+
+### Changed
+- Spostati `index.html`, `manifest.json`, `.nojekyll`, `css/`, `js/` e `firmware/` da `docs/` alla root del repository per il deploy diretto su GitHub Pages (`main` / `/ (root)`).
+- Aggiornato `copy_firmware.py` per esportare automaticamente i binari in `firmware/`.
+
 ## [1.1.0] - 2026-11-18
 
 ### Added
